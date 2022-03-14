@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  cypress-run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install a project with a clean slate
+        run: |
+          npm ci
+          $(npm bin)/cypress cache path
+          $(npm bin)/cypress cache list
+          $(npm bin)/cypress verify
+
+      - name: Remove json result files
+        uses: JesseTG/rm@v1.0.2
+        with:
+          path: ./cypress/results/json
+      
+      - name: Run Cypress tests
+        run: npm run test
+        continue-on-error: false
+        
+      - name: Merge test results into one
+        run: npm run report:merge
+        
+      - name: Generate HTML report
+        run: npm run report:gen
+        
+      - name: Deploy report to GitHub pages
+        uses: peaceiris/actions-gh-pages@v3.7.3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./public
+          user_name: 'github-actions[bot]'
+          user_email: 'github-actions[bot]@users.noreply.github.com'
