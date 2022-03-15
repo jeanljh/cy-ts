@@ -25,8 +25,9 @@ describe('Test Suite', () => {
             // cy.wrap(e).invoke('text').then(t => mainSearchVal.push(t)) // another way
             expect(e.text()).to.contain(data.searchValue)
         })
+        .intercept('POST', 'https://m.stripe.com/6').as('post')
         .get('[data-test=searchProductsButton]').click()
-        .wait(1000)
+        .wait('@post')
         .get(".product-list-item__title, [class$='__single-value']").each((e, i) =>
             cy.wrap(mainSearchVal[i]).then(v => expect(e.text()).to.contain(v)))
     })
@@ -50,8 +51,9 @@ describe('Test Suite', () => {
         // enter delivery location
         cy.contains('Where do you want to get delivered?').click()
         cy.get('#geosuggest__input').type(data.location)
+        cy.intercept('Get', '**/PlaceService.GetPlaceDetails*').as('place')
         cy.get('.geosuggest__item:first-child').click()
-        cy.wait(1000)
+        cy.wait('@place')
         // add to cart
         cy.contains('span', 'ENTER').click()
         cy.get('@btnAddCart').click()
@@ -80,15 +82,17 @@ describe('Test Suite', () => {
         const prices = []
         cy.get('.main-menu__search').as('btnMainSearch').click()
         .get('.input__field').type(data.searchValue)
+        .intercept('POST', 'https://m.stripe.com/6').as('post')
         .get('[data-test=searchProductsButton]').click()
-        .wait(1000)
+        .wait('@post')
         .get('[data-test=productList] > a').its('length').should('be.a', 'number').and('be.gt', 0)
         .get('.product-list-item__price > span').as('price').each(e =>
             prices.push(Number(e.text().replace(/&nbsp;/g, '').substring(4))))
         // verify sort by ascending price
         .get('[data-test=sortingDropdown]').as('ddlSort').contains('Clear').click()
+        .intercept('POST', 'https://m.stripe.com/6').as('post2')
         .get('div[id^=react-select').as('selSortOption').contains('Price Low-High').click()
-        .wait(3000)
+        .wait('@post2')
         .wrap(prices).then(p => {
             p.sort((a, b) => a - b)
             cy.get('.product-list-item__price > span').each((e, i) => {
@@ -97,8 +101,9 @@ describe('Test Suite', () => {
         })
         // verify sort by descending price
         .get('@ddlSort').contains('Price Low-High').click()
+        .intercept('POST', 'https://m.stripe.com/6').as('post3')
         .get('@selSortOption').contains('Price High-Low').click()
-        .wait(3000)
+        .wait('@post3')
         .wrap(prices).then(p => {
             p.sort((a, b) => b - a)
             cy.get('.product-list-item__price > span').each((e, i) => {
