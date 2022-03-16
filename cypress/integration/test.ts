@@ -8,7 +8,7 @@ describe('Test Suite', () => {
         window.localStorage.setItem('isAgeConfirmed', 'true')
         cy.visit(Cypress.config().baseUrl)
         cy.url().should('contain', Cypress.config().baseUrl)
-        cy.title().should('eq', data.title)
+        cy.title().should('match', new RegExp((`${data.title}|${data.title2}`), 'i'))
         cy.get('.product-list-item__image > img').should('have.prop', 'naturalWidth').should('be.gt', 0)
     })
 
