@@ -94,7 +94,8 @@ describe('Test Suite', () => {
         .get('div[id^=react-select').as('selSortOption').contains('Price Low-High').click()
         .wait('@post2')
         .wrap(prices).then(p => {
-            p.sort((a, b) => a - b)
+            p = Cypress._.sortBy(p)
+            // p.sort((a, b) => a - b) // method 2
             cy.get('.product-list-item__price > span').each((e, i) => {
                 expect(Number(e.text().replace(/&nbsp;/g, '').substring(4))).to.eq(p[i])
             })
@@ -105,7 +106,8 @@ describe('Test Suite', () => {
         .get('@selSortOption').contains('Price High-Low').click()
         .wait('@post3')
         .wrap(prices).then(p => {
-            p.sort((a, b) => b - a)
+            p = Cypress._.sortBy(p).reverse()
+            // p.sort((a, b) => b - a) // method 2
             cy.get('.product-list-item__price > span').each((e, i) => {
                 expect(Number(e.text().replace(/&nbsp;/g, '').substring(4))).to.eq(p[i])
             })
