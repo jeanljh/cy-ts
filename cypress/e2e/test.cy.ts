@@ -6,7 +6,7 @@ describe('Test Suite', () => {
     
     beforeEach('Go to homepage', () => {
         window.localStorage.setItem('isAgeConfirmed', 'true')
-        cy.visit(Cypress.config().baseUrl)
+        cy.visit('')
         cy.url().should('contain', Cypress.config().baseUrl)
         cy.title().should('match', new RegExp((`${data.title}|${data.title2}`), 'i'))
         cy.get('.product-list-item__image > img').should('have.prop', 'naturalWidth').should('be.gt', 0)
@@ -54,8 +54,8 @@ describe('Test Suite', () => {
         cy.intercept('Get', '**/PlaceService.GetPlaceDetails*').as('place')
         cy.get('.geosuggest__item:first-child').click()
         cy.wait('@place')
-        // add to cart
         cy.contains('span', 'ENTER').click()
+        // add to cart
         cy.get('@btnAddCart').click()
         // verify cart total quantity
         cy.get('@quantity').then(q =>
@@ -78,27 +78,50 @@ describe('Test Suite', () => {
         cy.get("[name='continueShopping']").should('exist').and('be.visible').and('be.enabled')
     })
 
-    it('Test Sorting in Search Result', () => {
-        const prices = []
-        cy.get('.main-menu__search').as('btnMainSearch').click()
+    it.only('Test Sorting in Search Result', () => {
+        const prices: number[] = []
+        cy.get('.main-menu__search').click()
         .get('.input__field').type(data.searchValue)
         .intercept('POST', 'https://m.stripe.com/6').as('post')
         .get('[data-test=searchProductsButton]').click()
         .wait('@post')
         .get('[data-test=productList] > a').its('length').should('be.a', 'number').and('be.gt', 0)
-        .get('.product-list-item__price > span').as('price').each(e =>
-            prices.push(Number(e.text().replace(/&nbsp;/g, '').substring(4))))
+        .wait(1000)
+        .get('div.add-to-cart > button:not([disabled])').each((e, i) => {
+            cy.log('output', e.parent().prev('.product-list-item__price').find('span:last-child').text())
+            cy.get('.product-list-item__price > :not([class$=undiscounted_price])').eq(i)
+            .invoke('text')
+            .invoke('replace', /&nbsp;/g, '')
+            .invoke('replace', /,/g, '')
+            .invoke('substring', 4)
+            .then(Number)
+            .then((n: any) => prices.push(n))
+        })
+        // .get('.product-list-item__price > :not([class$=undiscounted_price])').each(e =>
+        //     prices.push(Number(e.text().replace(/&nbsp;/g, '').substring(4))))
         // verify sort by ascending price
         .get('[data-test=sortingDropdown]').as('ddlSort').contains('Clear').click()
         .intercept('POST', 'https://m.stripe.com/6').as('post2')
         .get('div[id^=react-select').as('selSortOption').contains('Price Low-High').click()
         .wait('@post2')
+        .wait(1000)
         .wrap(prices).then(p => {
             p = Cypress._.sortBy(p)
             // p.sort((a, b) => a - b) // method 2
-            cy.get('.product-list-item__price > span').each((e, i) => {
-                expect(Number(e.text().replace(/&nbsp;/g, '').substring(4))).to.eq(p[i])
+            cy.log(JSON.stringify(p))
+            cy.get('div.add-to-cart > button:not([disabled])').each((e, i) => {
+                cy.get('.product-list-item__price > :not([class$=undiscounted_price])').eq(i)
+                .invoke('text')
+                .invoke('replace', /&nbsp;/g, '')
+                .invoke('replace', ',', '')
+                .invoke('substring', 4)
+                .then(Number)
+                .should('eq', p[i])
             })
+
+            // cy.get('.product-list-item__price > :not([class$=undiscounted_price])').each((e, i) => {
+            //     expect(Number(e.text().replace(/&nbsp;/g, '').substring(4))).to.eq(p[i])
+            // })
         })
         // verify sort by descending price
         .get('@ddlSort').contains('Price Low-High').click()
@@ -108,9 +131,20 @@ describe('Test Suite', () => {
         .wrap(prices).then(p => {
             p = Cypress._.sortBy(p).reverse()
             // p.sort((a, b) => b - a) // method 2
-            cy.get('.product-list-item__price > span').each((e, i) => {
-                expect(Number(e.text().replace(/&nbsp;/g, '').substring(4))).to.eq(p[i])
+
+            cy.get('div.add-to-cart > button:not([disabled])').each((e, i) => {
+                cy.get('.product-list-item__price > :not([class$=undiscounted_price])').eq(i)
+                .invoke('text')
+                .invoke('replace', /&nbsp;/g, '')
+                .invoke('replace', ',', '')
+                .invoke('substring', 4)
+                .then(Number)
+                .should('eq', p[i])
             })
+
+            // cy.get('.product-list-item__price > :not([class$=undiscounted_price])').each((e, i) => {
+            //     expect(Number(e.text().replace(/&nbsp;/g, '').substring(4))).to.eq(p[i])
+            // })
         })
     })
 })
