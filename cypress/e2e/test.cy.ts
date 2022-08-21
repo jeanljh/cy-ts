@@ -78,7 +78,7 @@ describe('Test Suite', () => {
         cy.get("[name='continueShopping']").should('exist').and('be.visible').and('be.enabled')
     })
 
-    it.only('Test Sorting in Search Result', () => {
+    it('Test Sorting in Search Result', () => {
         const prices: number[] = []
         cy.get('.main-menu__search').click()
         .get('.input__field').type(data.searchValue)
