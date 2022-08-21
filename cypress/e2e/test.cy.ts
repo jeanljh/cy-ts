@@ -52,6 +52,7 @@ describe('Test Suite', () => {
         cy.contains('Where do you want to get delivered?').click()
         cy.get('#geosuggest__input').type(data.location)
         cy.intercept('Get', '**/PlaceService.GetPlaceDetails*').as('place')
+        cy.wait(3000)
         cy.get('.geosuggest__item:first-child').click()
         cy.wait('@place')
         cy.contains('span', 'ENTER').click()
