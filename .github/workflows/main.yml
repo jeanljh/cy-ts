@@ -26,7 +26,7 @@ jobs:
 #         run: npm run test
 #         continue-on-error: true
 
-      - name: Install Cypress and run tests
+      - name: Install and run Cypress tests
         uses: cypress-io/github-action@v4
         with:
           headed: true
