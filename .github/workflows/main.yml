@@ -22,9 +22,14 @@ jobs:
         with:
           path: ./cypress/results/json
       
-      - name: Run Cypress tests
-        run: npm run test
-        continue-on-error: true
+#       - name: Run Cypress tests
+#         run: npm run test
+#         continue-on-error: true
+
+      - name: Install Cypress and run tests
+        uses: cypress-io/github-action@v4
+        with:
+          headed: true
         
       - name: Merge test results into one
         run: npm run report:merge
