@@ -13,11 +13,11 @@
   "author": "jean",
   "license": "ISC",
   "devDependencies": {
-    "cypress": "^10.6.0",
+    "cypress": "^10.9.0",
     "cypress-multi-reporters": "^1.6.1",
     "del-cli": "^4.0.1",
     "mochawesome": "^7.1.3",
     "mochawesome-merge": "^4.2.1",
-    "typescript": "^4.7.4"
+    "typescript": "^4.8.4"
   }
 }
